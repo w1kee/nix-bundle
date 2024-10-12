@@ -37,9 +37,13 @@ in rec {
       buildCommand = ''
         storePaths=$(perl ${pathsFromGraph} ./closure-*)
 
+        # https://reproducible-builds.org/docs/archives
         tar -cf - \
           --owner=0 --group=0 --mode=u+rw,uga+r \
           --hard-dereference \
+          --mtime="@$SOURCE_DATE_EPOCH" \
+          --format=gnu \
+          --sort=name \
           $storePaths | bzip2 -z > $out
       '';
     };
