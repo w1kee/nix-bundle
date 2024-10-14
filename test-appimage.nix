@@ -9,6 +9,6 @@ runCommand "patchelf" {} ''
   chmod +w $out
   patchelf \
     --set-interpreter ${stdenv.cc.bintools.dynamicLinker} \
-    --set-rpath ${stdenv.glibc.out}/lib:${fuse}/lib:${zlib}/lib:${glib}/lib \
+    --set-rpath ${lib.makeLibraryPath [ stdenv.cc.libc fuse zlib glib ]}
     $out
 ''

@@ -37,7 +37,7 @@ in stdenv.mkDerivation rec {
     for x in $out/bin/*; do
       patchelf \
         --set-interpreter ${dynamicLinker} \
-        --set-rpath ${lib.makeLibraryPath [ zlib stdenv.glibc.out fuse glib ]} \
+        --set-rpath ${lib.makeLibraryPath [ zlib stdenv.cc.libc fuse glib ]} \
         $x
     done
   '';
