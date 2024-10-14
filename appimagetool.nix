@@ -5,9 +5,7 @@
 # Ideally, this should be source based,
 # but I can't get it to build from GitHub
 
-let
-  inherit (stdenv.cc.bintools) dynamicLinker;
-in stdenv.mkDerivation rec {
+stdenv.mkDerivation rec {
   name = "appimagekit";
 
   src = fetchurl {
@@ -24,9 +22,11 @@ in stdenv.mkDerivation rec {
   unpackPhase = ''
     cp $src appimagetool-x86_64.AppImage
     chmod u+wx appimagetool-x86_64.AppImage
-    patchelf --set-interpreter ${dynamicLinker} \
-             --set-rpath ${fuse}/lib:${zlib}/lib \
-             appimagetool-x86_64.AppImage
+    patchelf \
+      --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+      --set-rpath ${fuse}/lib:${zlib}/lib \
+      appimagetool-x86_64.AppImage
+
     ./appimagetool-x86_64.AppImage --appimage-extract
   '';
 
@@ -36,7 +36,7 @@ in stdenv.mkDerivation rec {
 
     for x in $out/bin/*; do
       patchelf \
-        --set-interpreter ${dynamicLinker} \
+        --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
         --set-rpath ${lib.makeLibraryPath [ zlib stdenv.cc.libc fuse glib ]} \
         $x
     done

@@ -4,11 +4,11 @@
 
 with import nixpkgs' {};
 
-runCommand "patchelf" {} ''
+runCommandCC "patchelf" {} ''
   cp ${appimagefile} $out
   chmod +w $out
   patchelf \
-    --set-interpreter ${stdenv.cc.bintools.dynamicLinker} \
+    --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
     --set-rpath ${lib.makeLibraryPath [ stdenv.cc.libc fuse zlib glib ]}
     $out
 ''
