@@ -10,6 +10,18 @@
     inputs:
     let
       inherit (inputs.nixpkgs) lib;
+
+      getExe =
+        x:
+        lib.getExe' x (
+          x.meta.mainProgram or (lib.warn
+            "nix-bundle: Package ${
+              lib.strings.escapeNixIdentifier x.meta.name or x.pname or x.name
+            } does not have the meta.mainProgram attribute. Assuming you want '${lib.getName x}'."
+            lib.getName
+            x
+          )
+        );
     in
     inputs.utils.lib.eachDefaultSystem (system: {
       bundlers = {
@@ -17,7 +29,7 @@
         nix-bundle =
           drv:
           let
-            program = lib.getExe drv;
+            program = getExe drv;
             nixpkgs = inputs.nixpkgs.legacyPackages.${system};
             nix-bundle = import inputs.self { inherit nixpkgs; };
             script = nixpkgs.writeScript "startup" ''
