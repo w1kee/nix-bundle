@@ -2,14 +2,7 @@
 
 with nixpkgs;
 
-let
-  arx' = haskellPackages.arx.overrideAttrs (o: {
-    patchPhase = (o.patchPhase or "") + ''
-      substituteInPlace model-scripts/tmpx.sh \
-        --replace /tmp/ \$HOME/.cache/
-    '';
-  });
-in rec {
+rec {
   toStorePath = target:
     # If a store path has been given but is not a derivation, add the missing context
     # to it so it will be propagated properly as a build input.
@@ -24,7 +17,12 @@ in rec {
     stdenv.mkDerivation {
       name = "arx";
       buildCommand = ''
-        ${arx'}/bin/arx tmpx --shared -rm! ${archive} -o $out // ${startup}
+        # tmpdir has a additional `/` in the beginning to work around `QualifiedPath` checking for `|/|./|../|`
+        ${haskellPackages.arx}/bin/arx tmpx \
+          --tmpdir '/$HOME/.cache' \
+          --shared \
+          -rm! ${archive} \
+          -o $out // ${startup}
         chmod +x $out
       '';
     };
