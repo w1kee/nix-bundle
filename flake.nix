@@ -23,24 +23,32 @@
           )
         );
     in
-    inputs.utils.lib.eachDefaultSystem (system: {
-      bundlers = {
-        default = inputs.self.bundlers.${system}.nix-bundle;
-        nix-bundle =
-          drv:
+    inputs.utils.lib.eachDefaultSystem (
+      system:
+      let
+        nix-bundle-fun =
+          {
+            drv,
+            programPath ? getExe drv,
+          }:
           let
-            program = getExe drv;
             nixpkgs = inputs.nixpkgs.legacyPackages.${system};
             nix-bundle = import inputs.self { inherit nixpkgs; };
             script = nixpkgs.writeScript "startup" ''
               #!/bin/sh
-              .${nix-bundle.nix-user-chroot}/bin/nix-user-chroot -n ./nix -- ${program} "$@"
+              .${nix-bundle.nix-user-chroot}/bin/nix-user-chroot -n ./nix -- ${programPath} "$@"
             '';
           in
           nix-bundle.makebootstrap {
             targets = [ script ];
             startup = ".${builtins.unsafeDiscardStringContext script} '\"$@\"'";
           };
-      };
-    });
+      in
+      {
+        bundlers = {
+          default = inputs.self.bundlers.${system}.nix-bundle;
+          nix-bundle = drv: nix-bundle-fun { inherit drv; };
+        };
+      }
+    );
 }
