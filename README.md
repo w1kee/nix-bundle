@@ -1,3 +1,5 @@
+# UNSTABLE, Breaking changes may be done without warning.
+
 # nix-bundle
 
 nix-bundle is a way to package Nix attributes into single-file executables.
