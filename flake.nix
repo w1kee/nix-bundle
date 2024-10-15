@@ -40,6 +40,7 @@
             '';
           in
           nix-bundle.makebootstrap {
+            drvToBundle = drv;
             targets = [ script ];
             startup = ".${builtins.unsafeDiscardStringContext script} '\"$@\"'";
           };

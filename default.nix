@@ -13,9 +13,12 @@ rec {
     # in the context automatically.
     else "${target}";
 
-  arx = { archive, startup}:
+  arx = { drvToBundle, archive, startup}:
     stdenv.mkDerivation {
-      name = "arx";
+      name = if drvToBundle != null then "${drvToBundle.pname}-arx" else "arx";
+      passthru = {
+        inherit drvToBundle;
+      };
       buildCommand = ''
         # tmpdir has a additional `/` in the beginning to work around `QualifiedPath` checking for `|/|./|../|`
         ${haskellPackages.arx}/bin/arx tmpx \
@@ -78,9 +81,9 @@ rec {
     meta.platforms = lib.platforms.linux;
   };
 
-  makebootstrap = { targets, startup }:
+  makebootstrap = { targets, startup, drvToBundle ? null }:
     arx {
-      inherit startup;
+      inherit drvToBundle startup;
       archive = maketar {
         inherit targets;
       };
